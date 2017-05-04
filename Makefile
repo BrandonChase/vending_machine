@@ -1,4 +1,4 @@
-CXX= g++
+CXX= g++ -std=c++11
 CXXFLAGS= -Wall -g
 LDFLAGS= 
 INCLUDE= 
