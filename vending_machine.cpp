@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono> 
 #include <thread> //this_thread::sleep_for
-#include <stdio.h>
+#include <exception>
 
 using namespace std;
 
@@ -46,14 +46,13 @@ public:
 
 private:
 	State current_state;
-	int num_coins;
 	LightSwitch product_backlights;
 	LightSwitch product_NA_light;
 	bool verbose;
 };
 
 //Class Method Implementation
-VendingMachine::VendingMachine() : current_state(Idle), num_coins(0), product_backlights(On), product_NA_light(On), verbose(false)
+VendingMachine::VendingMachine() : current_state(Idle), product_backlights(Off), product_NA_light(Off), verbose(false)
 {
 	if(verbose) cout << "VM initiliazed to (Idle)\n";
 }
@@ -77,7 +76,6 @@ void VendingMachine::handleEvent(Event e)
 			{
 				if(verbose) cout << "\t{Coin Inserted} causes VM to switch from (Idle) to (One Coin in Machine)" << endl;
 				current_state = One_Coin_in_Machine;
-				num_coins++;
 			}
 
 			else if(current_state == One_Coin_in_Machine)
@@ -88,7 +86,6 @@ void VendingMachine::handleEvent(Event e)
 					cout << "\t\tProduct Backlights turned on" << endl;
 				}
 				current_state = Two_Coins_in_Machine;
-				num_coins++;
 				product_backlights = On;
 			}
 			break;
@@ -102,7 +99,6 @@ void VendingMachine::handleEvent(Event e)
 					cout << "\t\tAfter refunding coin, VM switches to (Idle)" << endl;
 				}
 				current_state = Refunding_Coin;
-				num_coins--;
 				current_state = Idle;
 			}
 
@@ -114,10 +110,8 @@ void VendingMachine::handleEvent(Event e)
 					cout << "\t\tAfter refunding coin, Product Backlights turned off" << endl;
 				}
 				current_state = Refunding_Coin;
-				num_coins--;
 				product_backlights = Off;
 				this_thread::sleep_for(chrono::seconds(1));
-				num_coins--;
 				if(verbose)
 				{
 					cout << "\t\tAfter waiting one second, VM refunds another coin and switches to (Idle)" << endl;
@@ -164,7 +158,6 @@ void VendingMachine::handleEvent(Event e)
 				current_state = Dispensing_Product;
 				//Dispense Product
 				product_backlights = Off;
-				num_coins = 0;
 				current_state = Idle;
 			}
 
@@ -188,22 +181,89 @@ void VendingMachine::handleEvent(Event e)
 
 void VendingMachine::test()
 {
+	try
+	{
+		//-----ATTEMPTS ALL  VALID TRANSITIONS FOR EVERY STATE-----
+		Event valid_transitions[] = 
+		{
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Product_Select_Pressed,
+			Product_Not_in_Stock,
+			Product_Select_Released,
+			Product_Select_Pressed,
+			Product_Select_Released
+		}; 
 
+		handleEvent(valid_transitions[0]);
+		if(current_state != One_Coin_in_Machine || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 0***");
+		handleEvent(valid_transitions[1]);
+		if(current_state != Idle || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 1***");
+		handleEvent(valid_transitions[2]);
+		if(current_state != One_Coin_in_Machine || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 2***");
+		handleEvent(valid_transitions[3]);
+		if(current_state != Two_Coins_in_Machine || product_backlights != On || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 3***");
+		handleEvent(valid_transitions[4]);
+		if(current_state != Idle || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 4***");
+		handleEvent(valid_transitions[5]);
+		if(current_state != One_Coin_in_Machine || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 5***");
+		handleEvent(valid_transitions[6]);
+		if(current_state != Two_Coins_in_Machine || product_backlights != On || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 6***");
+		handleEvent(valid_transitions[7]);
+		if(current_state != Selection_Validation || product_backlights != On || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 7***");
+		handleEvent(valid_transitions[8]);
+		if(current_state != Invalid_Product_Selection || product_backlights != On || product_NA_light != On)
+			throw logic_error("***FAILED TRANSITION AT INDEX 8***");
+		handleEvent(valid_transitions[9]);
+		if(current_state != Two_Coins_in_Machine || product_backlights != On || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 9***");
+		handleEvent(valid_transitions[10]);
+		if(current_state != Selection_Validation || product_backlights != On || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 10***");
+		handleEvent(valid_transitions[11]);
+		if(current_state != Idle || product_backlights != Off || product_NA_light != Off)
+			throw logic_error("***FAILED TRANSITION AT INDEX 11***");
+
+		//SUCCESSFUL
+		cout << "\t***Testing Passed***" << endl;
+	}
+
+	catch(const exception& e)
+	{
+		cerr << e.what() << endl;
+	}
 }	
 
 //----------MAIN----------
 int main()
 {
-	VendingMachine vm = VendingMachine();
+	VendingMachine vm;
+	VendingMachine test_vm;
 	vm.enableVerbose();
 
 	int choice;
 	do
 	{
-		cout << "Command (0~insert // 1~refund // 2~press p.s. // 3~release p.s. // 4~p.n.i.stock): ";
+		cout << "Command (0~insert // 1~refund // 2~press p.s. // 3~release p.s. // 4~p.n.i.stock // 5~test): ";
 		cin >> choice;
 		switch(choice)
 		{
+			case 5:
+				test_vm.test();
+				break;
 			case 0:
 				vm.handleEvent(Coin_Inserted);
 				break;

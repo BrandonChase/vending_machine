@@ -1,2 +1,29 @@
+Brandon Chase
+1001132518
+Assignment 4
+
+To compile and run:
+	make && ./vm
+
+Test vector:
+	Event valid_transitions[] = 
+		{
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Product_Select_Pressed,
+			Product_Not_in_Stock,
+			Product_Select_Released,
+			Product_Select_Pressed,
+			Product_Select_Released
+		}; 
+	This vector goes through all the possible valid transitions at every state.
+
 Defects:
-1) Didn't reset number of coins after dispensing
+1) Initliazed product_backlights and product_NA_light both to On when they should be Off
+
+It is not realistic to test every possible combination of inputs because one would need an infinite amount of test vectors. We can use ideas such as input domain partitioning to identify sets of inputs that produce similar outputs to reduce the number of test cases. For this state machine, we can use the fact that each loop through normal operation will behave the same in each loop. IE, the 99th purchase process will behave the same as the first. Thus, we only need to test all the possibilities for one cycle through all the states.
