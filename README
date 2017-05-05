@@ -3,7 +3,8 @@ Brandon Chase
 Assignment 4
 
 To compile and run:
-	make && ./vm
+	g++ -std=c++11 -Wall -g  ./vending_machine.cpp  -o ./vm
+	./vm
 
 Test vector:
 	Event valid_transitions[] = 

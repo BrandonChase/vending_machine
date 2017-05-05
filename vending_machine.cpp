@@ -1,3 +1,44 @@
+/*
+Brandon Chase
+1001132518
+Assignment 4
+
+To compile and run:
+	g++ -std=c++11 -Wall -g  ./vending_machine.cpp  -o ./vm
+	./vm
+
+TEST VECTOR:
+	Event valid_transitions[] = 
+		{
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Refund_Lever_Pulled,
+			Coin_Inserted,
+			Coin_Inserted,
+			Product_Select_Pressed,
+			Product_Not_in_Stock,
+			Product_Select_Released,
+			Product_Select_Pressed,
+			Product_Select_Released
+		}; 
+	This vector goes through all the possible valid transitions at every state.
+
+	Also, a vector that I didn't implement would be trying all the invalid transitions at each state and
+	ensuring that the vending machine doesn't do anything it shouldn't.
+
+DEFECTS:
+1) Initliazed product_backlights and product_NA_light both to On when they should be Off
+
+QUESTION: 
+It is not realistic to test every possible combination of inputs because one would need an infinite amount of test vectors. 
+We can use ideas such as input domain partitioning to identify sets of inputs that produce similar outputs to reduce the number of test cases. 
+For this state machine, we can use the fact that each loop through normal operation will behave the same in each iteration. 
+In other words, the 99th purchase process loop will behave the same as the 1st. 
+Thus, we only need to test all the possibilities for one cycle through all the states.
+*/
+
 #include <stdlib.h>
 #include <iostream>
 #include <chrono> 
@@ -38,8 +79,7 @@ class VendingMachine
 {
 public:
 	VendingMachine();
-	void enableVerbose();
-	void disableVerbose();
+	void toggleVerbose();
 	void handleEvent(Event e);
 	void test();
 
@@ -57,14 +97,9 @@ VendingMachine::VendingMachine() : current_state(Idle), product_backlights(Off),
 	if(verbose) cout << "VM initiliazed to (Idle)\n";
 }
 
-void VendingMachine::enableVerbose()
+void VendingMachine::toggleVerbose()
 {
-	verbose = true;
-}
-
-void VendingMachine::disableVerbose()
-{
-	verbose = false;
+	verbose = !verbose;
 }
 
 void VendingMachine::handleEvent(Event e)
@@ -252,18 +287,14 @@ int main()
 {
 	VendingMachine vm;
 	VendingMachine test_vm;
-	vm.enableVerbose();
 
 	int choice;
 	do
 	{
-		cout << "Command (0~insert // 1~refund // 2~press p.s. // 3~release p.s. // 4~p.n.i.stock // 5~test): ";
+		cout << "Command (9 for help // 5 to run test): ";
 		cin >> choice;
 		switch(choice)
 		{
-			case 5:
-				test_vm.test();
-				break;
 			case 0:
 				vm.handleEvent(Coin_Inserted);
 				break;
@@ -278,6 +309,15 @@ int main()
 				break;
 			case 4:
 				vm.handleEvent(Product_Not_in_Stock);
+				break;
+			case 5:
+				test_vm.test();
+				break;
+			case 6:
+				vm.toggleVerbose();
+				break;
+			case 9:
+				cout << "\t0~insert // 1~refund // 2~press p.s. // 3~release p.s. // 4~p.n.i.stock // 5~test // 6~toggle verbose // -1~exit)" << endl;
 				break;
 			default:
 				cerr << "Invalid Selection!" << endl;
